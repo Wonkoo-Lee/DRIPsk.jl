@@ -98,13 +98,19 @@ function Drip(ω,β,A,Q,H;         # primitives of the D.R.I.P.
 
     A, Q, H = collect(A)[:,:], collect(Q)[:, :], collect(H)[:, :];
 
+    eigvals, eigvecs = eigen(Σ0) 
+    
+    Λ_sqrt = Diagonal(sqrt.(eigvals))
+    
+    SqR_Σ = eigvecs * Λ_sqrt
+
     ## initialize
     (n,m) = size(H)
     # n: dimension of state, m: number of actions
     eye   = Matrix{Float64}(I,n,n);
     err   = 1
     iter  = 0
-    SqRΣ  = sqrt(Σ0);
+    SqRΣ  = SqR_Σ;
     Σ1    = Matrix{Float64}(I,n,n)
     Ω1    = Matrix{Float64}(I,n,n)
     Σp    = Matrix{Float64}(I,n,n)
@@ -122,7 +128,7 @@ function Drip(ω,β,A,Q,H;         # primitives of the D.R.I.P.
         end
         Σp      = Symmetric(ω*SqRΣ*U/(max.(D,ω*eye))*U'*SqRΣ);
 
-        SqRΣ    = real.(sqrt(Σ0));
+        SqRΣ    = real.(SqR_Σ);
         invSqRΣ = real.(inv(SqRΣ));
 
         Σ1      = Symmetric(A*Σp*A' + Σq);
